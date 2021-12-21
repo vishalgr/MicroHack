@@ -1,0 +1,57 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "serverName": {
+      "value": "Mysqldb"
+    },
+    "administratorLogin": {
+      "value": "G R VISHAL"
+    },
+    "administratorLoginPassword": {
+      "value": "Qwerty@123#&*"
+    },
+    "skuCapacity": {
+      "value": 2
+    },
+    "skuName": {
+      "value": "GP_Gen5_2"
+    },
+    "SkuSizeMB": {
+      "value": 5120
+    },
+    "SkuTier": {
+      "value": "GeneralPurpose"
+    },
+    "skuFamily": {
+      "value": "Gen5"
+    },
+    "mysqlVersion": {
+      "value": "8.0"
+    },
+    "location": {
+      "value": "[resourceGroup().location]"
+    },
+    "backupRetentionDays": {
+      "value": 7
+    },
+    "geoRedundantBackup": {
+      "value": "Disabled"
+    },
+    "virtualNetworkName": {
+      "value": "azure_mysql_vnet"
+    },
+    "subnetName": {
+      "value": "azure_mysql_subnet"
+    },
+    "virtualNetworkRuleName": {
+      "value": "AllowSubnet"
+    },
+    "vnetAddressPrefix": {
+      "value": "10.0.0.0/16"
+    },
+    "subnetPrefix": {
+      "value": "10.0.0.0/16"
+    }
+  }
+}
