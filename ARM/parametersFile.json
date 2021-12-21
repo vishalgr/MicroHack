@@ -30,7 +30,7 @@
       "value": "8.0"
     },
     "location": {
-      "value": "[resourceGroup().location]"
+      "value": "East US"
     },
     "backupRetentionDays": {
       "value": 7
