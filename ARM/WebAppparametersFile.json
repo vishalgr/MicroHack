@@ -1,0 +1,24 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "webAppName": {
+      "value": "[concat('webApp-', uniqueString(resourceGroup().id))]"
+    },
+    "location": {
+      "value": "East US"
+    },
+    "sku": {
+      "value": "F1"
+    },
+    "language": {
+      "value": ".net"
+    },
+    "helloWorld": {
+      "value": null
+    },
+    "repoUrl": {
+      "value": null
+    }
+  }
+}
