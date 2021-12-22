@@ -1,342 +1,130 @@
 {
-    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "sites_ContosoHack_name": {
-            "defaultValue": "ContosoHack",
-            "type": "String"
+        "subscriptionId": {
+            "type": "string"
         },
-        "serverfarms_ASP_BuildRg_8ee5_externalid": {
-            "defaultValue": "/subscriptions/d2564c40-e7cd-4fc5-a527-f7a6dfc93bb1/resourceGroups/BuildRg/providers/Microsoft.Web/serverfarms/ASP-BuildRg-8ee5",
-            "type": "String"
+        "name": {
+            "type": "string"
+        },
+        "location": {
+            "type": "string"
+        },
+        "hostingPlanName": {
+            "type": "string"
+        },
+        "serverFarmResourceGroup": {
+            "type": "string"
+        },
+        "alwaysOn": {
+            "type": "bool"
+        },
+        "sku": {
+            "type": "string"
+        },
+        "skuCode": {
+            "type": "string"
+        },
+        "workerSize": {
+            "type": "string"
+        },
+        "workerSizeId": {
+            "type": "string"
+        },
+        "numberOfWorkers": {
+            "type": "string"
+        },
+        "currentStack": {
+            "type": "string"
+        },
+        "phpVersion": {
+            "type": "string"
+        },
+        "netFrameworkVersion": {
+            "type": "string"
         }
     },
-    "variables": {},
     "resources": [
         {
+            "apiVersion": "2018-11-01",
+            "name": "[parameters('name')]",
             "type": "Microsoft.Web/sites",
-            "apiVersion": "2021-02-01",
-            "name": "[parameters('sites_ContosoHack_name')]",
-            "location": "Central US",
-            "kind": "app",
+            "location": "[parameters('location')]",
+            "tags": null,
+            "dependsOn": [
+                "microsoft.insights/components/MicroAppWebb",
+                "[concat('Microsoft.Web/serverfarms/', parameters('hostingPlanName'))]"
+            ],
             "properties": {
-                "enabled": true,
-                "hostNameSslStates": [
-                    {
-                        "name": "contosohack.azurewebsites.net",
-                        "sslState": "Disabled",
-                        "hostType": "Standard"
-                    },
-                    {
-                        "name": "contosohack.scm.azurewebsites.net",
-                        "sslState": "Disabled",
-                        "hostType": "Repository"
-                    }
-                ],
-                "serverFarmId": "[parameters('serverfarms_ASP_BuildRg_8ee5_externalid')]",
-                "reserved": false,
-                "isXenon": false,
-                "hyperV": false,
+                "name": "[parameters('name')]",
                 "siteConfig": {
-                    "numberOfWorkers": 1,
-                    "acrUseManagedIdentityCreds": false,
-                    "alwaysOn": true,
-                    "http20Enabled": false,
-                    "functionAppScaleLimit": 0,
-                    "minimumElasticInstanceCount": 1
+                    "appSettings": [
+                        {
+                            "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+                            "value": "[reference('microsoft.insights/components/MicroAppWebb', '2015-05-01').InstrumentationKey]"
+                        },
+                        {
+                            "name": "APPLICATIONINSIGHTS_CONNECTION_STRING",
+                            "value": "[reference('microsoft.insights/components/MicroAppWebb', '2015-05-01').ConnectionString]"
+                        },
+                        {
+                            "name": "ApplicationInsightsAgent_EXTENSION_VERSION",
+                            "value": "~2"
+                        },
+                        {
+                            "name": "XDT_MicrosoftApplicationInsights_Mode",
+                            "value": "default"
+                        }
+                    ],
+                    "metadata": [
+                        {
+                            "name": "CURRENT_STACK",
+                            "value": "[parameters('currentStack')]"
+                        }
+                    ],
+                    "phpVersion": "[parameters('phpVersion')]",
+                    "netFrameworkVersion": "[parameters('netFrameworkVersion')]",
+                    "alwaysOn": "[parameters('alwaysOn')]"
                 },
-                "scmSiteAlsoStopped": false,
-                "clientAffinityEnabled": true,
-                "clientCertEnabled": false,
-                "clientCertMode": "Required",
-                "hostNamesDisabled": false,
-                "customDomainVerificationId": "E37CA7B0CD3BCA5E352952B84476C9BDA7B8FFC724961BBF8E381A896CBAEF55",
-                "containerSize": 0,
-                "dailyMemoryTimeQuota": 0,
-                "httpsOnly": false,
-                "redundancyMode": "None",
-                "storageAccountRequired": false,
-                "keyVaultReferenceIdentity": "SystemAssigned"
+                "serverFarmId": "[concat('/subscriptions/', parameters('subscriptionId'),'/resourcegroups/', parameters('serverFarmResourceGroup'), '/providers/Microsoft.Web/serverfarms/', parameters('hostingPlanName'))]",
+                "clientAffinityEnabled": true
             }
         },
         {
-            "type": "Microsoft.Web/sites/basicPublishingCredentialsPolicies",
-            "apiVersion": "2021-02-01",
-            "name": "[concat(parameters('sites_ContosoHack_name'), '/ftp')]",
-            "location": "Central US",
-            "dependsOn": [
-                "[resourceId('Microsoft.Web/sites', parameters('sites_ContosoHack_name'))]"
-            ],
+            "apiVersion": "2018-11-01",
+            "name": "[parameters('hostingPlanName')]",
+            "type": "Microsoft.Web/serverfarms",
+            "location": "[parameters('location')]",
+            "kind": "",
+            "tags": null,
+            "dependsOn": [],
             "properties": {
-                "allow": true
+                "name": "[parameters('hostingPlanName')]",
+                "workerSize": "[parameters('workerSize')]",
+                "workerSizeId": "[parameters('workerSizeId')]",
+                "numberOfWorkers": "[parameters('numberOfWorkers')]",
+                "zoneRedundant": false
+            },
+            "sku": {
+                "Tier": "[parameters('sku')]",
+                "Name": "[parameters('skuCode')]"
             }
         },
         {
-            "type": "Microsoft.Web/sites/basicPublishingCredentialsPolicies",
-            "apiVersion": "2021-02-01",
-            "name": "[concat(parameters('sites_ContosoHack_name'), '/scm')]",
-            "location": "Central US",
-            "dependsOn": [
-                "[resourceId('Microsoft.Web/sites', parameters('sites_ContosoHack_name'))]"
-            ],
+            "apiVersion": "2020-02-02-preview",
+            "name": "MicroAppWebb",
+            "type": "microsoft.insights/components",
+            "location": "eastus",
+            "tags": null,
+            "dependsOn": [],
             "properties": {
-                "allow": true
+                "ApplicationId": "[parameters('name')]",
+                "Request_Source": "IbizaWebAppExtensionCreate",
+                "Flow_Type": "Redfield",
+                "Application_Type": "web",
+                "WorkspaceResourceId": "/subscriptions/d2564c40-e7cd-4fc5-a527-f7a6dfc93bb1/resourcegroups/defaultresourcegroup-cus/providers/microsoft.operationalinsights/workspaces/defaultworkspace-d2564c40-e7cd-4fc5-a527-f7a6dfc93bb1-cus"
             }
-        },
-        {
-            "type": "Microsoft.Web/sites/config",
-            "apiVersion": "2021-02-01",
-            "name": "[concat(parameters('sites_ContosoHack_name'), '/web')]",
-            "location": "Central US",
-            "dependsOn": [
-                "[resourceId('Microsoft.Web/sites', parameters('sites_ContosoHack_name'))]"
-            ],
-            "properties": {
-                "numberOfWorkers": 1,
-                "defaultDocuments": [
-                    "Default.htm",
-                    "Default.html",
-                    "Default.asp",
-                    "index.htm",
-                    "index.html",
-                    "iisstart.htm",
-                    "default.aspx",
-                    "index.php",
-                    "hostingstart.html"
-                ],
-                "netFrameworkVersion": "v4.0",
-                "requestTracingEnabled": false,
-                "remoteDebuggingEnabled": false,
-                "remoteDebuggingVersion": "VS2019",
-                "httpLoggingEnabled": false,
-                "acrUseManagedIdentityCreds": false,
-                "logsDirectorySizeLimit": 35,
-                "detailedErrorLoggingEnabled": false,
-                "publishingUsername": "$ContosoHack",
-                "scmType": "VSTSRM",
-                "use32BitWorkerProcess": true,
-                "webSocketsEnabled": false,
-                "alwaysOn": true,
-                "managedPipelineMode": "Integrated",
-                "virtualApplications": [
-                    {
-                        "virtualPath": "/",
-                        "physicalPath": "site\\wwwroot",
-                        "preloadEnabled": true
-                    }
-                ],
-                "loadBalancing": "LeastRequests",
-                "experiments": {
-                    "rampUpRules": []
-                },
-                "autoHealEnabled": false,
-                "vnetRouteAllEnabled": false,
-                "vnetPrivatePortsCount": 0,
-                "localMySqlEnabled": false,
-                "ipSecurityRestrictions": [
-                    {
-                        "ipAddress": "Any",
-                        "action": "Allow",
-                        "priority": 1,
-                        "name": "Allow all",
-                        "description": "Allow all access"
-                    }
-                ],
-                "scmIpSecurityRestrictions": [
-                    {
-                        "ipAddress": "Any",
-                        "action": "Allow",
-                        "priority": 1,
-                        "name": "Allow all",
-                        "description": "Allow all access"
-                    }
-                ],
-                "scmIpSecurityRestrictionsUseMain": false,
-                "http20Enabled": false,
-                "minTlsVersion": "1.2",
-                "scmMinTlsVersion": "1.0",
-                "ftpsState": "AllAllowed",
-                "preWarmedInstanceCount": 0,
-                "functionAppScaleLimit": 0,
-                "functionsRuntimeScaleMonitoringEnabled": false,
-                "minimumElasticInstanceCount": 1,
-                "azureStorageAccounts": {}
-            }
-        },
-        {
-            "type": "Microsoft.Web/sites/deployments",
-            "apiVersion": "2021-02-01",
-            "name": "[concat(parameters('sites_ContosoHack_name'), '/21640086694136')]",
-            "location": "Central US",
-            "dependsOn": [
-                "[resourceId('Microsoft.Web/sites', parameters('sites_ContosoHack_name'))]"
-            ],
-            "properties": {
-                "status": 4,
-                "author": "Vishal G R",
-                "deployer": "VSTS",
-                "message": "{\"type\":\"Deployment\",\"commitId\":\"a43b5d588bdbb7d8d4ab6b005f1b3ee6b035f6ce\",\"buildId\":\"16\",\"releaseId\":\"2\",\"buildNumber\":\"20211221.3\",\"releaseName\":\"Release-2\",\"repoProvider\":\"GitHub\",\"repoName\":\"vishalgr/MicroHack\",\"collectionUrl\":\"https://dev.azure.com/MicroHacks/\",\"teamProject\":\"7bc3f8cd-b0a9-4740-87fd-9df8d2763ee8\",\"buildProjectUrl\":\"https://dev.azure.com/MicroHacks/7bc3f8cd-b0a9-4740-87fd-9df8d2763ee8\",\"repositoryUrl\":\"\",\"branch\":\"master\",\"teamProjectName\":\"DevOpsHacks\",\"slotName\":\"production\"}",
-                "start_time": "2021-12-21T11:38:16.2204396Z",
-                "end_time": "2021-12-21T11:38:16.2204396Z",
-                "active": true
-            }
-        },
-        {
-            "type": "Microsoft.Web/sites/hostNameBindings",
-            "apiVersion": "2021-02-01",
-            "name": "[concat(parameters('sites_ContosoHack_name'), '/', parameters('sites_ContosoHack_name'), '.azurewebsites.net')]",
-            "location": "Central US",
-            "dependsOn": [
-                "[resourceId('Microsoft.Web/sites', parameters('sites_ContosoHack_name'))]"
-            ],
-            "properties": {
-                "siteName": "ContosoHack",
-                "hostNameType": "Verified"
-            }
-        },
-        {
-            "type": "Microsoft.Web/sites/snapshots",
-            "apiVersion": "2015-08-01",
-            "name": "[concat(parameters('sites_ContosoHack_name'), '/2021-12-21T12_22_56_6321365')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Web/sites', parameters('sites_ContosoHack_name'))]"
-            ]
-        },
-        {
-            "type": "Microsoft.Web/sites/snapshots",
-            "apiVersion": "2015-08-01",
-            "name": "[concat(parameters('sites_ContosoHack_name'), '/2021-12-21T13_22_56_5049892')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Web/sites', parameters('sites_ContosoHack_name'))]"
-            ]
-        },
-        {
-            "type": "Microsoft.Web/sites/snapshots",
-            "apiVersion": "2015-08-01",
-            "name": "[concat(parameters('sites_ContosoHack_name'), '/2021-12-21T14_22_56_5604644')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Web/sites', parameters('sites_ContosoHack_name'))]"
-            ]
-        },
-        {
-            "type": "Microsoft.Web/sites/snapshots",
-            "apiVersion": "2015-08-01",
-            "name": "[concat(parameters('sites_ContosoHack_name'), '/2021-12-21T15_22_56_6182014')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Web/sites', parameters('sites_ContosoHack_name'))]"
-            ]
-        },
-        {
-            "type": "Microsoft.Web/sites/snapshots",
-            "apiVersion": "2015-08-01",
-            "name": "[concat(parameters('sites_ContosoHack_name'), '/2021-12-21T16_22_56_6801495')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Web/sites', parameters('sites_ContosoHack_name'))]"
-            ]
-        },
-        {
-            "type": "Microsoft.Web/sites/snapshots",
-            "apiVersion": "2015-08-01",
-            "name": "[concat(parameters('sites_ContosoHack_name'), '/2021-12-21T17_22_56_6968188')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Web/sites', parameters('sites_ContosoHack_name'))]"
-            ]
-        },
-        {
-            "type": "Microsoft.Web/sites/snapshots",
-            "apiVersion": "2015-08-01",
-            "name": "[concat(parameters('sites_ContosoHack_name'), '/2021-12-21T18_22_56_7718296')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Web/sites', parameters('sites_ContosoHack_name'))]"
-            ]
-        },
-        {
-            "type": "Microsoft.Web/sites/snapshots",
-            "apiVersion": "2015-08-01",
-            "name": "[concat(parameters('sites_ContosoHack_name'), '/2021-12-21T19_22_56_8006311')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Web/sites', parameters('sites_ContosoHack_name'))]"
-            ]
-        },
-        {
-            "type": "Microsoft.Web/sites/snapshots",
-            "apiVersion": "2015-08-01",
-            "name": "[concat(parameters('sites_ContosoHack_name'), '/2021-12-21T20_22_56_8543745')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Web/sites', parameters('sites_ContosoHack_name'))]"
-            ]
-        },
-        {
-            "type": "Microsoft.Web/sites/snapshots",
-            "apiVersion": "2015-08-01",
-            "name": "[concat(parameters('sites_ContosoHack_name'), '/2021-12-21T21_22_56_9488941')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Web/sites', parameters('sites_ContosoHack_name'))]"
-            ]
-        },
-        {
-            "type": "Microsoft.Web/sites/snapshots",
-            "apiVersion": "2015-08-01",
-            "name": "[concat(parameters('sites_ContosoHack_name'), '/2021-12-21T22_22_56_9900428')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Web/sites', parameters('sites_ContosoHack_name'))]"
-            ]
-        },
-        {
-            "type": "Microsoft.Web/sites/snapshots",
-            "apiVersion": "2015-08-01",
-            "name": "[concat(parameters('sites_ContosoHack_name'), '/2021-12-21T23_22_57_0509792')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Web/sites', parameters('sites_ContosoHack_name'))]"
-            ]
-        },
-        {
-            "type": "Microsoft.Web/sites/snapshots",
-            "apiVersion": "2015-08-01",
-            "name": "[concat(parameters('sites_ContosoHack_name'), '/2021-12-22T00_22_57_1319418')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Web/sites', parameters('sites_ContosoHack_name'))]"
-            ]
-        },
-        {
-            "type": "Microsoft.Web/sites/snapshots",
-            "apiVersion": "2015-08-01",
-            "name": "[concat(parameters('sites_ContosoHack_name'), '/2021-12-22T01_22_57_1464080')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Web/sites', parameters('sites_ContosoHack_name'))]"
-            ]
-        },
-        {
-            "type": "Microsoft.Web/sites/snapshots",
-            "apiVersion": "2015-08-01",
-            "name": "[concat(parameters('sites_ContosoHack_name'), '/2021-12-22T02_22_57_1989114')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Web/sites', parameters('sites_ContosoHack_name'))]"
-            ]
-        },
-        {
-            "type": "Microsoft.Web/sites/snapshots",
-            "apiVersion": "2015-08-01",
-            "name": "[concat(parameters('sites_ContosoHack_name'), '/2021-12-22T03_22_58_0120492')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Web/sites', parameters('sites_ContosoHack_name'))]"
-            ]
-        },
-        {
-            "type": "Microsoft.Web/sites/snapshots",
-            "apiVersion": "2015-08-01",
-            "name": "[concat(parameters('sites_ContosoHack_name'), '/2021-12-22T04_22_58_1078817')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Web/sites', parameters('sites_ContosoHack_name'))]"
-            ]
-        },
-        {
-            "type": "Microsoft.Web/sites/snapshots",
-            "apiVersion": "2015-08-01",
-            "name": "[concat(parameters('sites_ContosoHack_name'), '/2021-12-22T05_22_58_1093892')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Web/sites', parameters('sites_ContosoHack_name'))]"
-            ]
         }
     ]
 }

@@ -2,11 +2,47 @@
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "sites_ContosoHack_name": {
-            "value": null
+        "subscriptionId": {
+            "value": "d2564c40-e7cd-4fc5-a527-f7a6dfc93bb1"
         },
-        "serverfarms_ASP_BuildRg_8ee5_externalid": {
-            "value": null
+        "name": {
+            "value": "MicroAppWebb"
+        },
+        "location": {
+            "value": "East US"
+        },
+        "hostingPlanName": {
+            "value": "ASP-BuildRg-9be0"
+        },
+        "serverFarmResourceGroup": {
+            "value": "BuildRg"
+        },
+        "alwaysOn": {
+            "value": true
+        },
+        "sku": {
+            "value": "Standard"
+        },
+        "skuCode": {
+            "value": "S1"
+        },
+        "workerSize": {
+            "value": "0"
+        },
+        "workerSizeId": {
+            "value": "0"
+        },
+        "numberOfWorkers": {
+            "value": "1"
+        },
+        "currentStack": {
+            "value": "dotnet"
+        },
+        "phpVersion": {
+            "value": "OFF"
+        },
+        "netFrameworkVersion": {
+            "value": "v4.0"
         }
     }
 }
