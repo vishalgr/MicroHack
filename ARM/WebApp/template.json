@@ -1,125 +1,130 @@
 {
-  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-  "contentVersion": "1.0.0.0",
-  "parameters": {
-    "webAppName": {
-      "type": "string",
-      "defaultValue": "[concat('webApp-', uniqueString(resourceGroup().id))]",
-      "minLength": 2,
-      "metadata": {
-        "description": "Web app name."
-      }
-    },
-    "location": {
-      "type": "string",
-      "defaultValue": "[resourceGroup().location]",
-      "metadata": {
-        "description": "Location for all resources."
-      }
-    },
-    "sku": {
-      "type": "string",
-      "defaultValue": "F1",
-      "metadata": {
-        "description": "The SKU of App Service Plan."
-      }
-    },
-    "language": {
-      "type": "string",
-      "defaultValue": ".net",
-      "allowedValues": [
-        ".net",
-        "php",
-        "node",
-        "html"
-      ],
-      "metadata": {
-        "description": "The language stack of the app."
-      }
-    },
-    "helloWorld": {
-      "type": "bool",
-      "defaultValue": false,
-      "metadata": {
-        "description": "true = deploy a sample Hello World app."
-      }
-    },
-    "repoUrl": {
-      "type": "string",
-      "defaultValue": "",
-      "metadata": {
-        "description": "Optional Git Repo URL"
-      }
-    }
-  },
-  "variables": {
-    "appServicePlanPortalName": "[concat('AppServicePlan-', parameters('webAppName'))]",
-    "gitRepoReference": {
-      ".net": "https://github.com/Azure-Samples/app-service-web-dotnet-get-started",
-      "node": "https://github.com/Azure-Samples/nodejs-docs-hello-world",
-      "php": "https://github.com/Azure-Samples/php-docs-hello-world",
-      "html": "https://github.com/Azure-Samples/html-docs-hello-world"
-    },
-    "gitRepoUrl": "[if(bool(parameters('helloWorld')), variables('gitRepoReference')[toLower(parameters('language'))], parameters('repoUrl'))]",
-    "configReference": {
-      ".net": {
-        "comments": ".Net app. No additional configuration needed."
-      },
-      "html": {
-        "comments": "HTML app. No additional configuration needed."
-      },
-      "php": {
-        "phpVersion": "7.4"
-      },
-      "node": {
-        "appSettings": [
-          {
-            "name": "WEBSITE_NODE_DEFAULT_VERSION",
-            "value": "12.15.0"
-          }
-        ]
-      }
-    }
-  },
-  "resources": [
-    {
-      "type": "Microsoft.Web/serverfarms",
-      "apiVersion": "2020-06-01",
-      "name": "[variables('appServicePlanPortalName')]",
-      "location": "[parameters('location')]",
-      "sku": {
-        "name": "[parameters('sku')]"
-      }
-    },
-    {
-      "type": "Microsoft.Web/sites",
-      "apiVersion": "2020-06-01",
-      "name": "[parameters('webAppName')]",
-      "location": "[parameters('location')]",
-      "dependsOn": [
-        "[resourceId('Microsoft.Web/serverfarms', variables('appServicePlanPortalName'))]"
-      ],
-      "properties": {
-        "siteConfig": "[variables('configReference')[parameters('language')]]",
-        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('appServicePlanPortalName'))]"
-      },
-      "resources": [
-        {
-          "condition": "[contains(variables('gitRepoUrl'),'http')]",
-          "type": "sourcecontrols",
-          "apiVersion": "2020-06-01",
-          "name": "web",
-          "location": "[parameters('location')]",
-          "dependsOn": [
-            "[resourceId('Microsoft.Web/sites', parameters('webAppName'))]"
-          ],
-          "properties": {
-            "repoUrl": "[variables('gitRepoUrl')]",
-            "branch": "master",
-            "isManualIntegration": true
-          }
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "subscriptionId": {
+            "type": "string"
+        },
+        "name": {
+            "type": "string"
+        },
+        "location": {
+            "type": "string"
+        },
+        "hostingPlanName": {
+            "type": "string"
+        },
+        "serverFarmResourceGroup": {
+            "type": "string"
+        },
+        "alwaysOn": {
+            "type": "bool"
+        },
+        "sku": {
+            "type": "string"
+        },
+        "skuCode": {
+            "type": "string"
+        },
+        "workerSize": {
+            "type": "string"
+        },
+        "workerSizeId": {
+            "type": "string"
+        },
+        "numberOfWorkers": {
+            "type": "string"
+        },
+        "currentStack": {
+            "type": "string"
+        },
+        "phpVersion": {
+            "type": "string"
+        },
+        "netFrameworkVersion": {
+            "type": "string"
         }
-      ]
-    }
-  ]
+    },
+    "resources": [
+        {
+            "apiVersion": "2018-11-01",
+            "name": "[parameters('name')]",
+            "type": "Microsoft.Web/sites",
+            "location": "[parameters('location')]",
+            "tags": {},
+            "dependsOn": [
+                "microsoft.insights/components/webapideployapp",
+                "[concat('Microsoft.Web/serverfarms/', parameters('hostingPlanName'))]"
+            ],
+            "properties": {
+                "name": "[parameters('name')]",
+                "siteConfig": {
+                    "appSettings": [
+                        {
+                            "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+                            "value": "[reference('microsoft.insights/components/webapideployapp', '2015-05-01').InstrumentationKey]"
+                        },
+                        {
+                            "name": "APPLICATIONINSIGHTS_CONNECTION_STRING",
+                            "value": "[reference('microsoft.insights/components/webapideployapp', '2015-05-01').ConnectionString]"
+                        },
+                        {
+                            "name": "ApplicationInsightsAgent_EXTENSION_VERSION",
+                            "value": "~2"
+                        },
+                        {
+                            "name": "XDT_MicrosoftApplicationInsights_Mode",
+                            "value": "default"
+                        }
+                    ],
+                    "metadata": [
+                        {
+                            "name": "CURRENT_STACK",
+                            "value": "[parameters('currentStack')]"
+                        }
+                    ],
+                    "phpVersion": "[parameters('phpVersion')]",
+                    "netFrameworkVersion": "[parameters('netFrameworkVersion')]",
+                    "alwaysOn": "[parameters('alwaysOn')]"
+                },
+                "serverFarmId": "[concat('/subscriptions/', parameters('subscriptionId'),'/resourcegroups/', parameters('serverFarmResourceGroup'), '/providers/Microsoft.Web/serverfarms/', parameters('hostingPlanName'))]",
+                "clientAffinityEnabled": true
+            }
+        },
+        {
+            "apiVersion": "2018-11-01",
+            "name": "[parameters('hostingPlanName')]",
+            "type": "Microsoft.Web/serverfarms",
+            "location": "[parameters('location')]",
+            "kind": "",
+            "tags": {},
+            "dependsOn": [],
+            "properties": {
+                "name": "[parameters('hostingPlanName')]",
+                "workerSize": "[parameters('workerSize')]",
+                "workerSizeId": "[parameters('workerSizeId')]",
+                "numberOfWorkers": "[parameters('numberOfWorkers')]",
+                "zoneRedundant": false
+            },
+            "sku": {
+                "Tier": "[parameters('sku')]",
+                "Name": "[parameters('skuCode')]"
+            }
+        },
+        {
+            "apiVersion": "2020-02-02-preview",
+            "name": "webapideployapp",
+            "type": "microsoft.insights/components",
+            "location": "eastus",
+            "tags": {},
+            "dependsOn": [],
+            "properties": {
+                "ApplicationId": "[parameters('name')]",
+                "Request_Source": "IbizaWebAppExtensionCreate",
+                "Flow_Type": "Redfield",
+                "Application_Type": "web",
+                "WorkspaceResourceId": "/subscriptions/d2564c40-e7cd-4fc5-a527-f7a6dfc93bb1/resourcegroups/defaultresourcegroup-cus/providers/microsoft.operationalinsights/workspaces/defaultworkspace-d2564c40-e7cd-4fc5-a527-f7a6dfc93bb1-cus"
+            }
+        }
+    ]
 }
