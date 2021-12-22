@@ -3,7 +3,7 @@
   "contentVersion": "1.0.0.0",
   "parameters": {
     "webAppName": {
-      "value": "[concat('webApp-', uniqueString(resourceGroup().id))]"
+      "value": "HackWebbApp"
     },
     "location": {
       "value": "East US"
